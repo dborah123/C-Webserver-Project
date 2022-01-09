@@ -20,6 +20,7 @@
 #define BACKLOG 10
 
 void *service_connection(void *data);
+void  push_page(char *page, int conn_fd);
 
 int
 main(int argc, char *argv[]) {
@@ -112,48 +113,19 @@ service_connection(void * data) {
     int conn_fd = *(int *) data;
     free(data);
     int bytes_received;
-    int bytes_read;
-    int home_html_fd;
     char input_buf[BUF_SIZE];
-    char html_buf[BUF_SIZE];
-    char output_buf[BUF_SIZE];
 
     /* TODO: Accept data from client */
     while ((bytes_received = recv(conn_fd, input_buf, BUF_SIZE, 0)) > 0) {
 
         /* TODO: Parse data to figure out which HTML file one wants. Throw error is not found */
 
-        /* TODO: Retreive specific HTML FILE and read it into buffer */
-        if ((home_html_fd = open("home.html", O_RDONLY)) < 0) {
-            perror("open");
-        }
-
-        if ((bytes_read = read(home_html_fd, html_buf, 2000)) < 0) {
-            perror("read");
-        }
-
-        printf("%s", html_buf);
-        fflush(stdout);
-
-        // Adding null terminator
-        input_buf[bytes_read+1] = '\0';
-
-        /* TODO: Format buffer into proper format */
-        snprintf(output_buf,
-                300, 
-                "HTTP/1.1 200 OK\nContent-length: %d\nContent-type: text/html\n\n%s", 
-                bytes_read + 40, 
-                html_buf);
-
-        /* TODO: Send HTML data back to user */
-        if (send(conn_fd, output_buf, 2070, 0) < 0) {
-            perror("send");
-        }
-
-        //printf("%s", output_buf);
-
-        if (close(home_html_fd) < 0) {
-            perror("close");
+        if (strncmp(input_buf, "GET /home", 9) == 0) {
+            push_page("home.html", conn_fd);
+        } else if (strncmp(input_buf, "GET /about", 10) == 0) {
+            push_page("about.html", conn_fd);
+        } else {
+            push_page("404-not-found.html", conn_fd);
         }
 
     }
@@ -167,5 +139,54 @@ service_connection(void * data) {
     }
 
     return NULL;
+}
+
+
+void 
+push_page(char *page, int conn_fd) {
+    /**
+     * Processes request for specific page and sents it to client
+     */
+
+    int bytes_read;
+    int html_fd;
+    int bytes_sending;
+    char html_buf[BUF_SIZE];
+    char output_buf[BUF_SIZE];
+
+    /* TODO: Retreive specific HTML FILE and read it into buffer */
+    if ((html_fd = open(page, O_RDONLY)) < 0) {
+        perror("open");
+    }
+
+    if ((bytes_read = read(html_fd, html_buf, 2000)) < 0) {
+        perror("read");
+    }
+
+    /* TODO: Format buffer into proper format */
+    if (strcmp(page, "404-not-found.html") == 0) {
+        bytes_sending = bytes_read + 67;
+        snprintf(output_buf,
+            bytes_sending, 
+            "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-type: text/html\n\n%s", 
+            bytes_read, 
+            html_buf);
+    } else {
+        bytes_sending = bytes_read + 60;
+        snprintf(output_buf,
+            bytes_sending, 
+            "HTTP/1.1 200 OK\nContent-length: %d\nContent-type: text/html\n\n%s", 
+            bytes_read, 
+            html_buf);
+    }
+
+    /* TODO: Send HTML data back to user */
+    if (send(conn_fd, output_buf, bytes_sending, 0) < 0) {
+        perror("send");
+    }
+
+    if (close(html_fd) < 0) {
+        perror("close");
+    }
 }
 
