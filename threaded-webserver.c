@@ -33,8 +33,6 @@ main(int argc, char *argv[]) {
     uint16_t remote_port;
     socklen_t addrlen;
     char *remote_ip;
-    char buf[BUF_SIZE];
-    int bytes_received;
     int *conn_fd_heap;
 
     // Placeholder
@@ -116,22 +114,17 @@ service_connection(void * data) {
     char input_buf[BUF_SIZE];
 
     /* TODO: Accept data from client */
-    while ((bytes_received = recv(conn_fd, input_buf, BUF_SIZE, 0)) > 0) {
-
-        /* TODO: Parse data to figure out which HTML file one wants. Throw error is not found */
-
-        if (strncmp(input_buf, "GET /home", 9) == 0) {
-            push_page("home.html", conn_fd);
-        } else if (strncmp(input_buf, "GET /about", 10) == 0) {
-            push_page("about.html", conn_fd);
-        } else {
-            push_page("404-not-found.html", conn_fd);
-        }
-
+    if ((bytes_received = recv(conn_fd, input_buf, BUF_SIZE, 0)) < 0) {
+        perror("recv");        
     }
+    /* TODO: Parse data to figure out which HTML file one wants. Throw error is not found */
 
-    if (bytes_received < 0) {
-        perror("recv");
+    if (strncmp(input_buf, "GET /home", 9) == 0) {
+        push_page("home.html", conn_fd);
+    } else if (strncmp(input_buf, "GET /about", 10) == 0) {
+       push_page("about.html", conn_fd);
+    } else {
+       push_page("404-not-found.html", conn_fd);
     }
 
     if (close(conn_fd) < 0) {
