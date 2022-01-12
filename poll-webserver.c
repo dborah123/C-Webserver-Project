@@ -7,12 +7,15 @@
 #include <string.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <poll.h>
+
+#define MAX_FDS 20
 
 void
 main(int argc, char *argv[]) {
 
     char *listen_port;
-    int listen_fd, conn_fd;
+    int listen_fd, new_fd;
     struct addrinfo hints, *res;
     int rc;
     struct sockaddr_in remote_sa;
@@ -46,18 +49,71 @@ main(int argc, char *argv[]) {
         perror("listen");
     }
 
-    /* TODO: Set up listener fd */
-
     /* TODO: Set up poll structure */
 
+    ndfs_t nfds = 0;
+    struct pollfd *poll_fds;
+    int max_fds = 0, num_fds = 0;
+
+    if ((poll_fds = malloc(MAX_FDS * sizeof(pollfd))) == NULL) {
+        perror("malloc");
+    }
+
+    poll_fds->fd = listen_fd;
+    poll_fds->events = POLLIN;
+    poll_fds->revents = 0;
+    num_fds += 1
+
     /* TODO: Enter while loop */
+    while (1) {
 
         /*TODO: Poll */
+        nfds = num_fds;
+        if (poll(nfds, poll_fds, -1) == -1) {
+            perror("poll");
+        }
 
         /* TODO: Iterate thru file descriptors */
+        for (int fd = 0; fd < (nfds+1); fd++) {
+            // Skip dead fds
+            if ((poll_fds + fd)->fd < 0) {
+                continue;
+            }
 
-            /* TODO: Check if fd equals listen. If so, create new fd for poll. Else, push html */
+            // Check is fd is ready for reading
+            if (((poll_fds + fd)->events & POLLIN) == POLLIN) {
+                // Check if fd is a new connection
+                if ((poll_fds + fd)->fd == listed_fd) {
+                    new_fd = accept(listen_fd, (struct sockaddr *) &remote_sa, &addrlen);
+
+                    if (new_fd < 0) {
+                        perror("accept");
+                        continue;
+                    }
+
+                    // Add new_fd to poll_fds
+                    if (num_fds == max_fds) { // Add more space
+                        poll_fds = realloc(poll_fds, (max_fds+num_fds) * sizeof(pollfd));
+                        if (poll_fds == NULL ) {
+                            perror("realloc");
+                        }
+                    }
+
+                    (poll_fds + num_fds)->fd = new_fd;
+                    (poll_fds + num_fds)->events = POLLIN;
+                    (poll_fds + num_fds)->revents = 0;
 
 
+                    /* Announcing new communication partner */
+                    remote_ip = inet_ntoa(remote_sa.sin_addr);
+                    remote_port = ntohs(remote_sa.sin_port);
+
+                    printf("Connection from %s: %d\n", remote_ip, remote_port);
+                }
+            } else {
+                // TODO: Receive data, process request, and push HTML to connection
+            }
+        }
+    }
 }
 
