@@ -14,7 +14,6 @@
 #include <pthread.h>
 #include <fcntl.h>
 #include <time.h>
-#include <stdbool.h>
 
 #define BUF_SIZE 2000
 #define BACKLOG 10
@@ -119,9 +118,9 @@ service_connection(void * data) {
     }
     /* TODO: Parse data to figure out which HTML file one wants. Throw error is not found */
 
-    if (strncmp(input_buf, "GET /home", 9) == 0) {
+    if (strncmp(input_buf, "GET /home ", 10) == 0) {
         push_page("home.html", conn_fd);
-    } else if (strncmp(input_buf, "GET /about", 10) == 0) {
+    } else if (strncmp(input_buf, "GET /about ", 11) == 0) {
        push_page("about.html", conn_fd);
     } else {
        push_page("404-not-found.html", conn_fd);
