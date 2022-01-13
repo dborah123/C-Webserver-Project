@@ -42,6 +42,7 @@ main(int argc, char *argv[]) {
     /* create a socket */
     if ((listen_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket");
+        exit(1);
     }
 
     /* bind it to a port */
@@ -51,24 +52,25 @@ main(int argc, char *argv[]) {
     hints.ai_flags = AI_PASSIVE;
     if((rc = getaddrinfo(NULL, listen_port, &hints, &res)) != 0) {
         printf("getaddrinfo failed: %s\n", gai_strerror(rc));
-        exit(1);
+        exit(2);
     }
 
     if (bind(listen_fd, res->ai_addr, res->ai_addrlen) < 0) {
         perror("bind");
+        exit(3);
     }
 
     /* start listening */
     if (listen(listen_fd, BACKLOG) < 0) {
         perror("listen");
+        exit(4);
     }
-
 
     printf("Threaded HTTP Server waiting on port %s\n", listen_port);
 
     addrlen = sizeof(remote_sa);
 
-    /* TODO: Accept new connections here */
+    /* Accept new connections */
     while (1) {
 
         conn_fd = accept(listen_fd, (struct sockaddr *) &remote_sa, &addrlen);
@@ -83,6 +85,7 @@ main(int argc, char *argv[]) {
 
         if (conn_fd_heap == NULL) {
             perror("malloc");
+            exit(5);
         }
 
         *conn_fd_heap = conn_fd;
@@ -96,6 +99,7 @@ main(int argc, char *argv[]) {
         /* Spinning a new thread to service connection */
         if (pthread_create(&thread, NULL, service_connection, conn_fd_heap) != 0) {
             perror("pthread_create");
+            exit(6);
         }
     }
 }
@@ -112,11 +116,12 @@ service_connection(void * data) {
     int bytes_received;
     char input_buf[BUF_SIZE];
 
-    /* TODO: Accept data from client */
+    /* Receive data from client */
     if ((bytes_received = recv(conn_fd, input_buf, BUF_SIZE, 0)) < 0) {
         perror("recv");        
+        exit(7);
     }
-    /* TODO: Parse data to figure out which HTML file one wants. Throw error is not found */
+    /* Parse data to figure out which HTML file one wants. Throw error is not found */
 
     if (strncmp(input_buf, "GET /home ", 10) == 0) {
         push_page("home.html", conn_fd);
@@ -128,6 +133,7 @@ service_connection(void * data) {
 
     if (close(conn_fd) < 0) {
         perror("close");
+        exit(8);
     }
 
     return NULL;
@@ -146,16 +152,18 @@ push_page(char *page, int conn_fd) {
     char html_buf[BUF_SIZE];
     char output_buf[BUF_SIZE];
 
-    /* TODO: Retreive specific HTML FILE and read it into buffer */
+    /*  Retreive specific HTML FILE and read it into buffer */
     if ((html_fd = open(page, O_RDONLY)) < 0) {
         perror("open");
+        exit(9);
     }
 
     if ((bytes_read = read(html_fd, html_buf, 2000)) < 0) {
         perror("read");
+        exit(10);
     }
 
-    /* TODO: Format buffer into proper format */
+    /* Format buffer */
     if (strcmp(page, "404-not-found.html") == 0) {
         bytes_sending = bytes_read + 67;
         snprintf(output_buf,
@@ -172,13 +180,15 @@ push_page(char *page, int conn_fd) {
             html_buf);
     }
 
-    /* TODO: Send HTML data back to user */
+    /* Send HTML data back to user */
     if (send(conn_fd, output_buf, bytes_sending, 0) < 0) {
         perror("send");
+        exit(11);
     }
 
     if (close(html_fd) < 0) {
         perror("close");
+        exit(12);
     }
 }
 
