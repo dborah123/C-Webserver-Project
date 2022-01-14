@@ -43,6 +43,7 @@ main(int argc, char *argv[]) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
+
     if((rc = getaddrinfo(NULL, listen_port, &hints, &res)) != 0) {
         printf("getaddrinfo failed: %s\n", gai_strerror(rc));
         exit(1);
@@ -61,11 +62,11 @@ main(int argc, char *argv[]) {
 
     addrlen = sizeof(remote_sa);
 
-    /* TODO: Set up poll structure */
+    /* Set up poll structure */
 
     nfds_t nfds = 0;
     struct pollfd *poll_fds;
-    int max_fds = 0, num_fds = 0;
+    int  num_fds = 0;
 
     if ((poll_fds = malloc(MAX_FDS * sizeof(struct pollfd))) == NULL) {
         perror("malloc");
@@ -76,22 +77,23 @@ main(int argc, char *argv[]) {
     poll_fds->revents = 0;
     num_fds += 1;
 
-    /* TODO: Enter while loop */
     struct pollfd *curr_file;
     while (1) {
 
-        /*TODO: Poll */
+        /* Poll blocks until fd is ready for reading */
         nfds = num_fds;
         if (poll(poll_fds, nfds, -1) == -1) {
             perror("poll");
         }
-        printf("polling in while loopi\n");
-        /* TODO: Iterate thru file descriptors */
+
+        /* Iterate thru file descriptors 
+         * Note: This is probably not necessary as we are closing every new
+         * connection before another is accepted
+         */
         for (int fd = 0; fd < (nfds+1); fd++) {
-            printf("iterating in for loop\n");
             curr_file = (poll_fds + fd);
 
-            // Skip dead fds
+            // Skip dead fds. Not necessary as we are just using one
             if (curr_file->fd < 0) {
                 continue;
             }
@@ -101,54 +103,40 @@ main(int argc, char *argv[]) {
                 // Check if fd is a new connection
                 if (curr_file->fd == listen_fd) {
                     new_fd = accept(listen_fd, (struct sockaddr *) &remote_sa, &addrlen);
-                    printf("accepting new connection\n");
+
                     if (new_fd < 0) {
                         perror("accept");
                         continue;
                     }
-
-                    // Add new_fd to poll_fds
-                    if (num_fds == max_fds) { // Add more space
-                        poll_fds = realloc(poll_fds, (max_fds+num_fds) * sizeof(struct pollfd));
-                        if (poll_fds == NULL ) {
-                            perror("realloc");
-                        }
-                    }
-
-                    (poll_fds + num_fds)->fd = new_fd;
-                    (poll_fds + num_fds)->events = POLLIN;
-                    (poll_fds + num_fds)->revents = 0;
-
 
                     /* Announcing new communication partner */
                     remote_ip = inet_ntoa(remote_sa.sin_addr);
                     remote_port = ntohs(remote_sa.sin_port);
 
                     printf("Connection from %s: %d\n", remote_ip, remote_port);
-                }
-            } else {
-                // TODO: Receive data, process request, and push HTML to connection
-                bytes_received = recv(curr_file->fd, input_buf, BUF_SIZE, 0);
-                printf("receiving data from client\n");
-                if (bytes_received < 0) {
-                    perror("recv");
-                } else if (bytes_received == 0) {
-                    // Terminate connection with client
-                    printf("Client at socket %d closed\n", curr_file->fd);
+                
+                    // Receive data, process request, and push HTML to connection
+                    bytes_received = recv(new_fd, input_buf, BUF_SIZE, 0);
+                    printf("receiving data from client\n");
 
-                    if (close(curr_file->fd) != 0) {
-                        perror("close");
+                    if (bytes_received < 0) {
+                        perror("recv");
                     }
 
-                    curr_file->fd *= -1;
-                } else {
-                    // Client has requested a page
+                    // Route url and send correct page to user
                     if (strncmp(input_buf, "GET /home ", 10) == 0) {
-                        push_page("home.html", curr_file->fd);
+                        push_page("home.html", new_fd);
                     } else if (strncmp(input_buf, "GET /about ", 11) == 0) {
-                        push_page("about.html", curr_file->fd);
+                        push_page("about.html", new_fd);
                     } else {
-                        push_page("404-not-found.html", curr_file->fd);
+                        push_page("404-not-found.html", new_fd);
+                    }
+
+                    // Terminate connection with client
+                    printf("Client at socket %d closed\n", new_fd);
+
+                    if (close(new_fd) != 0) {
+                        perror("close");
                     }
                 }
             }
@@ -169,7 +157,7 @@ push_page(char *page, int conn_fd) {
     char html_buf[BUF_SIZE];
     char output_buf[BUF_SIZE];
 
-    /* TODO: Retreive specific HTML FILE and read it into buffer */
+    /* Retreive specific HTML file and read it into buffer */
     if ((html_fd = open(page, O_RDONLY)) < 0) {
         perror("open");
     }
@@ -178,7 +166,7 @@ push_page(char *page, int conn_fd) {
         perror("read");
     }
 
-    /* TODO: Format buffer into proper format */
+    /* Format buffer into proper format */
     if (strcmp(page, "404-not-found.html") == 0) {
         bytes_sending = bytes_read + 67;
         snprintf(output_buf,
@@ -195,7 +183,7 @@ push_page(char *page, int conn_fd) {
             html_buf);
     }
 
-    /* TODO: Send HTML data back to user */
+    /* Send HTML data back to user */
     if (send(conn_fd, output_buf, bytes_sending, 0) < 0) {
         perror("send");
     }
