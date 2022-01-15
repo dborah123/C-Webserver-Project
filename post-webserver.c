@@ -18,7 +18,10 @@
 #define MAX_FDS 20
 #define BUF_SIZE 3000
 
-void  push_page(char *page, int conn_fd);
+void  push_data(char *page, int conn_fd);
+void  route_get(char *input_buf, int new_fd);
+void  route_post();
+char *parse_file_type(char *filename); 
 
 int
 main(int argc, char *argv[]) {
@@ -117,6 +120,7 @@ main(int argc, char *argv[]) {
                     remote_ip = inet_ntoa(remote_sa.sin_addr);
                     remote_port = ntohs(remote_sa.sin_port);
 
+                    printf("*************************************\n\n");
                     printf("Connection from %s: %d\n", remote_ip, remote_port);
                 
                     // Receive data, process request, and push HTML to connection
@@ -126,15 +130,14 @@ main(int argc, char *argv[]) {
                         perror("recv");
                     }
 
-                    printf("\n*****************************\nINCOMING DATA:\n\n%s\n\n", input_buf);
+                    printf("\nINCOMING DATA:\n\n%s\n\n", input_buf);
 
-                    // Route url and send correct page to user
-                    if (strncmp(input_buf, "GET /home ", 10) == 0) {
-                        push_page("home.html", new_fd);
-                    } else if (strncmp(input_buf, "GET /about ", 11) == 0) {
-                        push_page("about.html", new_fd);
+                    if (strncmp(input_buf, "GET", 3) == 0) {
+                        route_get(input_buf, new_fd);
+                    } else if (strncmp(input_buf, "POST", 4) == 0) {
+                        route_post();
                     } else {
-                        push_page("404-not-found.html", new_fd);
+                        push_data("404-not-found.html", new_fd);
                     }
 
                     // Terminate connection with client
@@ -150,19 +153,50 @@ main(int argc, char *argv[]) {
     exit(EXIT_SUCCESS);
 }
 
+void
+route_get(char *input_buf, int conn_fd) {
+    /*
+     * Routes GET requests to function that pushes correct return type
+     */
+
+    /* Route url and send correct page to user */
+    if (strncmp(input_buf, "GET /home ", 10) == 0) {
+        push_data("home.html", conn_fd);
+    } else if (strncmp(input_buf, "GET /about ", 11) == 0) {
+        push_data("about.html", conn_fd);
+    } else if (strncmp(input_buf, "GET /style.css", 14) == 0) {
+        push_data("style.css", conn_fd);
+    } else {
+        push_data("404-not-found.html", conn_fd);
+    }
+
+
+}
+
 
 void
-push_page(char *page, int conn_fd) {
+route_post(){
+
+}
+
+
+void
+push_data(char *page, int conn_fd) {
     /**
      * Processes request for specific page and sents it to client
      */
     int bytes_read;
     int html_fd;
     int bytes_sending;
+
+    char *file_type;
+    char *content_type;
+    int content_type_len;
+
     char html_buf[BUF_SIZE];
     char output_buf[BUF_SIZE];
 
-    /* Retreive specific HTML file and read it into buffer */
+    /* Retreive specific text file and read it into buffer */
     if ((html_fd = open(page, O_RDONLY)) < 0) {
         perror("open");
     }
@@ -171,20 +205,35 @@ push_page(char *page, int conn_fd) {
         perror("read");
     }
 
+    /* Set content type */
+    file_type = (strchr(page, '.') + 1);
+
+    if (strcmp(file_type, "html") == 0){
+        content_type = "text/html";
+        content_type_len = strlen(content_type);
+    } else if (strcmp(file_type, "css") == 0) {
+        content_type = "text/css";
+        content_type_len = strlen(content_type);
+    } else {
+        perror("content type");
+    }
+
     /* Format buffer into proper format */
     if (strcmp(page, "404-not-found.html") == 0) {
-        bytes_sending = bytes_read + 67;
+        bytes_sending = bytes_read + content_type_len + 67;
         snprintf(output_buf,
             bytes_sending,
-            "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-type: text/html\n\n%s",
+            "HTTP/1.1 404 Not Found\nContent-length: %d\nContent-type: %s\n\n%s",
             bytes_read,
+            content_type,
             html_buf);
     } else {
-        bytes_sending = bytes_read + 60;
+        bytes_sending = bytes_read + content_type_len + 60;
         snprintf(output_buf,
             bytes_sending,
-            "HTTP/1.1 200 OK\nContent-length: %d\nContent-type: text/html\n\n%s",
+            "HTTP/1.1 200 OK\nContent-length: %d\nContent-type: %s\n\n%s",
             bytes_read,
+            content_type,
             html_buf);
     }
 
@@ -196,5 +245,21 @@ push_page(char *page, int conn_fd) {
     if (close(html_fd) < 0) {
         perror("close");
     }
+}
+
+char *
+parse_file_type(char *filename) {
+    /*
+     * Parses filename to return a pointer to the file type denoted by '.'
+     * Note: Might want to include more case handling
+     */
+    int i = 0;
+
+    /* Iterate until '.' is found */
+    while (filename[i] != '.') {
+        i++;
+    }
+
+    return &filename[i+1];
 }
 
