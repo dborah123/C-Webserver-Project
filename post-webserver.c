@@ -169,8 +169,6 @@ route_get(char *input_buf, int conn_fd) {
     } else {
         push_data("404-not-found.html", conn_fd);
     }
-
-
 }
 
 
