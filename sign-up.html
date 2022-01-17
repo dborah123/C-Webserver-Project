@@ -16,6 +16,8 @@
     <body>
         <h1 class="alert alert-info">Sign Up for information</h1>
 
+        <div id="info-box"></div>
+
         <p>
             Sign up here to see your information posted on this site
         </p>
@@ -23,18 +25,26 @@
         <form action="" method="POST">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="nameInput">Name</span>
-                <input type="text" class="form-control" aria-describedby="nameInput" name="name">
+                <input type="text" class="form-control" id="name" aria-describedby="nameInput" name="name">
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="ageInput">Age</span>
-                <input type="text" class="form-control" aria-describedby="ageInput" name="age">
+                <input type="text" class="form-control" id="age" aria-describedby="ageInput" name="age">
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="emailInput">Email</span>
-                <input type="email" class="form-control" aria-describedby="emailInput" name="email">
+                <input type="email" class="form-control" id="email" aria-describedby="emailInput" name="email">
             </div>
+            <button class="btn btn-outline-success" onclick="displayInfo()">Submit</button>
+        </form>
 
+        <h3>Write a message to the next visitor!</h3>
 
+        <form action="" method="POST">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="nameInput">Message</span>
+                <input type="text" class="form-control" aria-describedby="nameInput" name="name" maxlength="100">
+            </div>
             <button class="btn btn-outline-success">Submit</button>
         </form>
 

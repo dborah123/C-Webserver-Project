@@ -166,6 +166,8 @@ route_get(char *input_buf, int conn_fd) {
         push_data("about.html", conn_fd);
     } else if (strncmp(input_buf, "GET /style.css", 14) == 0) {
         push_data("style.css", conn_fd);
+    } else if (strncmp(input_buf, "GET /sign-up.html", 17) == 0) {
+        push_data("sign-up.html", conn_fd);
     } else {
         push_data("404-not-found.html", conn_fd);
     }
