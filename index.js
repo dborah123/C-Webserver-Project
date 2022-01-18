@@ -2,7 +2,13 @@ function getMessage() {
     /**
      * Gets previous function user's message from server
      */
-    
+    const response = await fetch("/message", {
+        'headers': {
+            'Accept': 'application/json'
+        }
+    })
+    const message = await response.json()
+    console.log(message)
 }
 
 
@@ -23,6 +29,7 @@ displayInfo = function() {
         </div>
     `
 }
+
 
 function handleAlerts(type, msg, num) {
     /**
