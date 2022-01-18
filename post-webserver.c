@@ -21,7 +21,6 @@
 void  push_data(char *page, int conn_fd);
 void  route_get(char *input_buf, int new_fd);
 void  route_post();
-char *parse_file_type(char *filename); 
 
 int
 main(int argc, char *argv[]) {
@@ -135,7 +134,7 @@ main(int argc, char *argv[]) {
                     if (strncmp(input_buf, "GET", 3) == 0) {
                         route_get(input_buf, new_fd);
                     } else if (strncmp(input_buf, "POST", 4) == 0) {
-                        route_post();
+                  //      route_post();
                     } else {
                         push_data("404-not-found.html", new_fd);
                     }
@@ -166,8 +165,10 @@ route_get(char *input_buf, int conn_fd) {
         push_data("about.html", conn_fd);
     } else if (strncmp(input_buf, "GET /style.css", 14) == 0) {
         push_data("style.css", conn_fd);
-    } else if (strncmp(input_buf, "GET /sign-up.html", 17) == 0) {
+    } else if (strncmp(input_buf, "GET /sign-up", 12) == 0) {
         push_data("sign-up.html", conn_fd);
+    } else if (strncmp(input_buf, "GET /index.js", 13) == 0) {
+        push_data("index.js", conn_fd);
     } else {
         push_data("404-not-found.html", conn_fd);
     }
@@ -175,8 +176,15 @@ route_get(char *input_buf, int conn_fd) {
 
 
 void
-route_post(){
-
+route_post(char *input_buf){
+    /**
+     * Routes POST requests to correct function
+     */
+    if (strncmp(input_buf, "POST /sign-up", 13) == 0) {
+        //handlePost()        
+    } else {
+        //push_data("404-not-found.html", conn_fd)
+    }
 }
 
 
@@ -247,19 +255,18 @@ push_data(char *page, int conn_fd) {
     }
 }
 
-char *
-parse_file_type(char *filename) {
-    /*
-     * Parses filename to return a pointer to the file type denoted by '.'
-     * Note: Might want to include more case handling
+
+//void
+//handlePost() {
+    /**
+     * Parses POST request, prints them, and stores them if necessary
      */
-    int i = 0;
 
-    /* Iterate until '.' is found */
-    while (filename[i] != '.') {
-        i++;
-    }
+    // NEED PARSER
 
-    return &filename[i+1];
-}
+    /* TODO: Somehow only look at content of request
+     *       Print personal info in server
+     *       Save message in a buffer
+     */
+//}
 

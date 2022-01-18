@@ -1,7 +1,8 @@
-function getMessage() {
+async function getMessage() {
     /**
      * Gets previous function user's message from server
      */
+    console.log("henlo")
     const response = await fetch("/message", {
         'headers': {
             'Accept': 'application/json'
