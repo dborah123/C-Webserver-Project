@@ -16,7 +16,7 @@
 
 #define BACKLOG 20
 #define MAX_FDS 20
-#define BUF_SIZE 3000
+#define BUF_SIZE 4000
 
 void  push_page(char *page, int conn_fd);
 

@@ -169,6 +169,8 @@ route_get(char *input_buf, int conn_fd) {
         push_data("sign-up.html", conn_fd);
     } else if (strncmp(input_buf, "GET /index.js", 13) == 0) {
         push_data("index.js", conn_fd);
+    } else if (strncmp(input_buf, "GET /home.js", 12) == 0) {
+        push_data("home.js", conn_fd);
     } else {
         push_data("404-not-found.html", conn_fd);
     }
