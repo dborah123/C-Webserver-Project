@@ -258,8 +258,8 @@ push_data(char *page, int conn_fd) {
 }
 
 
-//void
-//handlePost() {
+void
+handlePost() {
     /**
      * Parses POST request, prints them, and stores them if necessary
      */
@@ -270,5 +270,10 @@ push_data(char *page, int conn_fd) {
      *       Print personal info in server
      *       Save message in a buffer
      */
-//}
+
+
+    /*
+     * New idea: create a parser myself and store each request in a struct
+     */
+}
 
