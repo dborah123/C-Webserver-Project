@@ -20,7 +20,7 @@
 
 void  push_data(char *page, int conn_fd);
 void  route_get(char *input_buf, int new_fd);
-void  route_post();
+void  route_post(char *input_buf);
 
 int
 main(int argc, char *argv[]) {
@@ -178,14 +178,14 @@ route_get(char *input_buf, int conn_fd) {
 
 
 void
-route_post(char *input_buf){
+route_post(char *input_buf, conn_fd){
     /**
      * Routes POST requests to correct function
      */
     if (strncmp(input_buf, "POST /sign-up", 13) == 0) {
-        //handlePost()        
+        handlePost(input_buf)
     } else {
-        //push_data("404-not-found.html", conn_fd)
+        push_data("404-not-found.html", conn_fd)
     }
 }
 
@@ -259,21 +259,11 @@ push_data(char *page, int conn_fd) {
 
 
 void
-handlePost() {
+handlePost(char *input_buf) {
     /**
      * Parses POST request, prints them, and stores them if necessary
      */
 
-    // NEED PARSER
+    
 
-    /* TODO: Somehow only look at content of request
-     *       Print personal info in server
-     *       Save message in a buffer
-     */
-
-
-    /*
-     * New idea: create a parser myself and store each request in a struct
-     */
 }
-
