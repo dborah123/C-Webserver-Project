@@ -1,7 +1,7 @@
 /*
  * post-webserver.c
  */
-
+#include "request/myrequest.h"
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,9 +18,10 @@
 #define MAX_FDS 20
 #define BUF_SIZE 3000
 
-void  push_data(char *page, int conn_fd);
-void  route_get(char *input_buf, int new_fd);
-void  route_post(char *input_buf);
+void push_data(char *page, int conn_fd);
+void route_get(struct Request *request, int new_fd);
+void route_post(struct Request *request);
+void handle_post(struct Request *request);
 
 int
 main(int argc, char *argv[]) {
@@ -84,6 +85,7 @@ main(int argc, char *argv[]) {
     num_fds += 1;
 
     struct pollfd *curr_file;
+    struct Request *request;
     while (1) {
 
         /* Poll blocks until fd is ready for reading */
@@ -131,9 +133,15 @@ main(int argc, char *argv[]) {
 
                     printf("\nINCOMING DATA:\n\n%s\n\n", input_buf);
 
-                    if (strncmp(input_buf, "GET", 3) == 0) {
-                        route_get(input_buf, new_fd);
-                    } else if (strncmp(input_buf, "POST", 4) == 0) {
+                    // Process data into Request struct
+                    if (!(request = parse_request(input_buf))) {
+                        perror("parse_request");
+                        exit(1);
+                    }
+
+                    if (request->method == GET) {
+                        route_get(request, new_fd);
+                    } else if (request->method == POST) {
                   //      route_post();
                     } else {
                         push_data("404-not-found.html", new_fd);
@@ -145,31 +153,43 @@ main(int argc, char *argv[]) {
                     if (close(new_fd) != 0) {
                         perror("close");
                     }
+
+                    // Free request information
+                    free_entire_request(request);
                 }
             }
         }
     }
+
+    /* Exit Process */
+    if (!malloc(poll)) {
+        perror("malloc");
+        exit(1);
+    }
+
     exit(EXIT_SUCCESS);
 }
 
 void
-route_get(char *input_buf, int conn_fd) {
+route_get(struct Request *request, int conn_fd) {
     /*
      * Routes GET requests to function that pushes correct return type
      */
 
+    char *uri = request->uri
+
     /* Route url and send correct page to user */
-    if (strncmp(input_buf, "GET /home ", 10) == 0) {
+    if (strcmp(uri, "/home ") == 0) {
         push_data("home.html", conn_fd);
-    } else if (strncmp(input_buf, "GET /about ", 11) == 0) {
+    } else if (strcmp(uri, "/about ") == 0) {
         push_data("about.html", conn_fd);
-    } else if (strncmp(input_buf, "GET /style.css", 14) == 0) {
+    } else if (strcmp(uri, "/style.css") == 0) {
         push_data("style.css", conn_fd);
-    } else if (strncmp(input_buf, "GET /sign-up", 12) == 0) {
+    } else if (strcmp(uri, "/sign-up") == 0) {
         push_data("sign-up.html", conn_fd);
-    } else if (strncmp(input_buf, "GET /index.js", 13) == 0) {
+    } else if (strcmp(uri, "/index.js") == 0) {
         push_data("index.js", conn_fd);
-    } else if (strncmp(input_buf, "GET /home.js", 12) == 0) {
+    } else if (strcmp(uri, "/home.js") == 0) {
         push_data("home.js", conn_fd);
     } else {
         push_data("404-not-found.html", conn_fd);
@@ -178,7 +198,7 @@ route_get(char *input_buf, int conn_fd) {
 
 
 void
-route_post(char *input_buf, conn_fd){
+route_post(struct Request *request, conn_fd){
     /**
      * Routes POST requests to correct function
      */
@@ -259,7 +279,7 @@ push_data(char *page, int conn_fd) {
 
 
 void
-handlePost(char *input_buf) {
+handlePost(struct Request *request) {
     /**
      * Parses POST request, prints them, and stores them if necessary
      */
