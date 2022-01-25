@@ -2,7 +2,7 @@ CFLAGS = -g -Wall -pedantic
 CFLAGS_T=-g -Wall -pedantic -pthread
 
 .PHONY: all
-all: threaded-webserver poll-webserver post-webserver
+all: threaded-webserver poll-webserver myrequest post-webserver
 
 threaded-webserver: threaded-webserver.c
 	gcc $(CFLAGS_T) -o $@ $^

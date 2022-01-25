@@ -200,7 +200,7 @@ route_post(struct Request *request, int conn_fd) {
      * Routes POST requests to correct function
      */
     if (strcmp(request->uri, "/sign-up") == 0) {
-        handle_post(request);
+        //handle_post(request);
     } else {
         push_data("404-not-found.html", conn_fd);
     }
@@ -285,6 +285,6 @@ handlePost(struct Request *request) {
      * Parses POST request, prints them, and stores them if necessary
      */
 
-    
+    return;    
 
 }
