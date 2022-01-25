@@ -162,10 +162,7 @@ main(int argc, char *argv[]) {
     }
 
     /* Exit Process */
-    if (malloc(poll_fds) == NULL) {
-        perror("malloc");
-        exit(1);
-    }
+    free(poll_fds);
 
     exit(EXIT_SUCCESS);
 }

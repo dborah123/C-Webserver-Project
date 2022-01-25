@@ -10,10 +10,10 @@ threaded-webserver: threaded-webserver.c
 poll-webserver: poll-webserver.c
 	gcc $(CFLAGS) -o $@ $^
 
-post-webserver: post-webserver.c myrequest
+post-webserver: post-webserver.c myrequest.o
 	gcc $(CFLAGS) -o $@ $^
 
-myrequest: myrequest.o
+myrequest: ./request/myrequest.c
 	gcc $(CFLAGS) -c -o myrequest.o ./request/myrequest.c
 
 .PHONY: clean
