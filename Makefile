@@ -10,8 +10,11 @@ threaded-webserver: threaded-webserver.c
 poll-webserver: poll-webserver.c
 	gcc $(CFLAGS) -o $@ $^
 
-post-webserver: post-webserver.c
+post-webserver: post-webserver.c myrequest
 	gcc $(CFLAGS) -o $@ $^
+
+myrequest: myrequest.o
+	gcc $(CFLAGS) -c -o myrequest.o ./request/myrequest.c
 
 .PHONY: clean
 	rm -f threaded-webserver post-webserver poll-webserver

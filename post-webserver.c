@@ -20,7 +20,7 @@
 
 void push_data(char *page, int conn_fd);
 void route_get(struct Request *request, int new_fd);
-void route_post(struct Request *request);
+void route_post(struct Request *request, int conn_fd);
 void handle_post(struct Request *request);
 
 int
@@ -162,7 +162,7 @@ main(int argc, char *argv[]) {
     }
 
     /* Exit Process */
-    if (!malloc(poll)) {
+    if (malloc(poll_fds) == NULL) {
         perror("malloc");
         exit(1);
     }
@@ -176,7 +176,7 @@ route_get(struct Request *request, int conn_fd) {
      * Routes GET requests to function that pushes correct return type
      */
 
-    char *uri = request->uri
+    char *uri = request->uri;
 
     /* Route url and send correct page to user */
     if (strcmp(uri, "/home ") == 0) {
@@ -198,14 +198,14 @@ route_get(struct Request *request, int conn_fd) {
 
 
 void
-route_post(struct Request *request, conn_fd){
+route_post(struct Request *request, int conn_fd) {
     /**
      * Routes POST requests to correct function
      */
-    if (strncmp(input_buf, "POST /sign-up", 13) == 0) {
-        handlePost(input_buf)
+    if (strcmp(request->uri, "/sign-up") == 0) {
+        handle_post(request);
     } else {
-        push_data("404-not-found.html", conn_fd)
+        push_data("404-not-found.html", conn_fd);
     }
 }
 
@@ -229,10 +229,12 @@ push_data(char *page, int conn_fd) {
     /* Retreive specific text file and read it into buffer */
     if ((html_fd = open(page, O_RDONLY)) < 0) {
         perror("open");
+        return; 
     }
 
     if ((bytes_read = read(html_fd, html_buf, BUF_SIZE)) < 0) {
         perror("read");
+        return;
     }
 
     /* Set content type */
@@ -270,10 +272,12 @@ push_data(char *page, int conn_fd) {
     /* Send HTML data back to user */
     if (send(conn_fd, output_buf, bytes_sending, 0) < 0) {
         perror("send");
+        return;
     }
 
     if (close(html_fd) < 0) {
         perror("close");
+        return;
     }
 }
 
