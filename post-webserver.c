@@ -139,6 +139,8 @@ main(int argc, char *argv[]) {
                         exit(1);
                     }
 
+                    printf("request method: %d uri: %s\n", request->method, request->uri);
+
                     if (request->method == GET) {
                         route_get(request, new_fd);
                     } else if (request->method == POST) {
@@ -176,9 +178,9 @@ route_get(struct Request *request, int conn_fd) {
     char *uri = request->uri;
 
     /* Route url and send correct page to user */
-    if (strcmp(uri, "/home ") == 0) {
+    if (strcmp(uri, "/home") == 0) {
         push_data("home.html", conn_fd);
-    } else if (strcmp(uri, "/about ") == 0) {
+    } else if (strcmp(uri, "/about") == 0) {
         push_data("about.html", conn_fd);
     } else if (strcmp(uri, "/style.css") == 0) {
         push_data("style.css", conn_fd);
