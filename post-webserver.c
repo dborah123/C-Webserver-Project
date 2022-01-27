@@ -282,7 +282,7 @@ push_data(char *page, int conn_fd) {
 void
 handlePost(struct Request *request) {
     /**
-     * Parses POST request, prints them, and stores them if necessary
+     * Prints POST data, stores it in buffer
      */
 
     return;    
