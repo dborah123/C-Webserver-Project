@@ -3,3 +3,4 @@ post-webserver
 poll-webserver
 request
 *.o
+!spec/*.o

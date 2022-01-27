@@ -17,4 +17,5 @@ myrequest: ./request/myrequest.c
 	gcc $(CFLAGS) -c -o myrequest.o ./request/myrequest.c
 
 .PHONY: clean
-	rm -f threaded-webserver post-webserver poll-webserver
+clear:
+	rm -f *.o threaded-webserver post-webserver poll-webserver
