@@ -2,6 +2,7 @@
  * post-webserver.c
  */
 #include "request/myrequest.h"
+#include "cJSON/cJSON.h"
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -200,7 +201,9 @@ route_post(struct Request *request, int conn_fd) {
      * Routes POST requests to correct function
      */
     if (strcmp(request->uri, "/sign-up") == 0) {
-        //handle_post(request);
+        handle_post(request);
+    } else if (strcmp(request->uri, "/message") == 0) {
+        handle_post(request);
     } else {
         push_data("404-not-found.html", conn_fd);
     }
@@ -280,11 +283,49 @@ push_data(char *page, int conn_fd) {
 
 
 void
-handlePost(struct Request *request) {
+handle_post(struct Request *request) {
     /**
      * Prints POST data, stores it in buffer
      */
+    char *json_string;
+    Pair *curr_pair = request->body;
+    struct cJSON *root;
+    FILE *fd;
 
+    if (strcmp(request->uri, "/sign-up") == 0) {
+        while (curr_pair) {
+            printf("%s: %s\n", curr_pair->name, curr_pair->value);
+            curr_pair = curr_pair->next;
+        }
+    } else {// Format information into JSON
+        printf("HEREEEEE!!!\n");
+        root = cJSON_CreateObject();
+
+        while (curr_pair) {
+            cJSON_AddItemToObject(
+                root, 
+                curr_pair->name, 
+                cJSON_CreateString(curr_pair->value)
+            );
+        }
+
+        json_string = cJSON_Print(root);
+
+        if (!(fd = fopen("static/message.json", "w"))) {
+            perror("fopen");
+            exit(1);
+        }
+
+        if (!fputs(json_string, fd)) {
+            perror("fputs");
+            exit(1);
+        } 
+
+        if (!fclose(fd)) {
+            perror("fclose");
+            exit(1);
+        }
+    }
     return;    
 
 }
