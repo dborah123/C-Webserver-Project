@@ -23,6 +23,7 @@ void push_data(char *page, int conn_fd);
 void route_get(struct Request *request, int new_fd);
 void route_post(struct Request *request, int conn_fd);
 void handle_post(struct Request *request);
+void handle_json(struct Request *request, int conn_fd);
 
 int
 main(int argc, char *argv[]) {
@@ -189,6 +190,8 @@ route_get(struct Request *request, int conn_fd) {
         push_data("static/index.js", conn_fd);
     } else if (strcmp(uri, "/home.js") == 0) {
         push_data("static/home.js", conn_fd);
+    } else if (strncmp(uri, "/json", 5) == 0) {
+        handle_json(request, conn_fd);
     } else {
         push_data("templates/404-not-found.html", conn_fd);
     }
@@ -242,13 +245,17 @@ push_data(char *page, int conn_fd) {
 
     if (strcmp(file_type, "html") == 0){
         content_type = "text/html";
-        content_type_len = strlen(content_type);
     } else if (strcmp(file_type, "css") == 0) {
         content_type = "text/css";
-        content_type_len = strlen(content_type);
+    } else if (strcmp(file_type, "js") == 0) {
+        content_type = "text/javascript";
+    } else if (strcmp(file_type, "json") == 0) {
+        content_type = "application/json";
     } else {
         perror("content type");
     }
+
+    content_type_len = strlen(content_type);
 
     /* Format buffer into proper format */
     if (strcmp(page, "404-not-found.html") == 0) {
@@ -328,4 +335,50 @@ handle_post(struct Request *request) {
     }
     return;    
 
+}
+
+void
+handle_json(Request *request, int conn_fd) {
+    /**
+     * Take request body, turns it into a json object and
+     * Note: One must free object outside of functio
+     */
+
+    char *json_string;
+    Pair *curr_pair = request->body; 
+    cJSON *root;
+    FILE *fd;
+
+    root = cJSON_CreateObject();
+
+    while (curr_pair) {
+        cJSON_AddItemToObject(
+            root, 
+            curr_pair->name, 
+            cJSON_CreateString(curr_pair->value)
+        );
+    }
+
+    json_string = cJSON_Print(root);
+
+    if (!(fd = fopen("static/message.json", "w"))) {
+        perror("fopen");
+        exit(1);
+    }
+
+    // Copy json into buffer
+    if (!fputs(json_string, fd)) {
+        perror("fputs");
+        exit(1);
+    } 
+
+    if (fclose(fd) == EOF) {
+        perror("fclose");
+        exit(1);
+    }
+
+    // Free json object
+    cJSON_Delete(root);
+ 
+    push_data("/json_message", conn_fd);
 }
