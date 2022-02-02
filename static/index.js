@@ -10,6 +10,14 @@ async function getMessage() {
     })
     const message = await response.json()
     console.log(message)
+
+    const messageBox = document.getElementById("message-box");
+
+    messageBox.innerHTML = `
+        <div>
+            ${message["name"]}
+        </div>
+    `
 }
 
 
