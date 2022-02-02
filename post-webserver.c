@@ -144,7 +144,7 @@ main(int argc, char *argv[]) {
                     if (request->method == GET) {
                         route_get(request, new_fd);
                     } else if (request->method == POST) {
-                  //      route_post();
+                        route_post(request, new_fd);
                     } else {
                         push_data("404-not-found.html", new_fd);
                     }
@@ -357,6 +357,8 @@ handle_json(Request *request, int conn_fd) {
             curr_pair->name, 
             cJSON_CreateString(curr_pair->value)
         );
+        printf("%s: %s", curr_pair->name, curr_pair->value);
+        curr_pair = curr_pair->next;
     }
 
     json_string = cJSON_Print(root);
@@ -371,6 +373,8 @@ handle_json(Request *request, int conn_fd) {
         perror("fputs");
         exit(1);
     } 
+
+    printf("String saved\n");
 
     if (fclose(fd) == EOF) {
         perror("fclose");
