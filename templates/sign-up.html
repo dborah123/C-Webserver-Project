@@ -37,17 +37,17 @@
                 <span class="input-group-text" id="emailInput">Email</span>
                 <input type="email" class="form-control" id="email" aria-describedby="emailInput" name="email">
             </div>
-            <button class="btn btn-outline-success" onclick="displayInfo()">Submit</button>
+            <button type="submit" class="btn btn-outline-success">Submit</button>
         </form>
 
         <h3>Write a message to the next visitor!</h3>
 
-        <form action="save_message" method="POST">
+        <form id="message-form">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="nameInput">Message</span>
                 <input type="text" class="form-control" aria-describedby="nameInput" name="name" maxlength="100">
             </div>
-            <button class="btn btn-outline-success">Submit</button>
+            <button id="submit" class="btn btn-outline-success">Submit</button>
         </form>
 
         <!-- Scripts -->
@@ -64,6 +64,18 @@
         <script type="text/javascript">
             console.log("hello world")
             window.onload = getMessage()
+            const messageForm = document.getElementById("messageForm")
+
+            messageForm.addEventListener("submit", function (e) {
+                e.preventDefault()
+
+                const formData = new FormData(this)
+
+                fetch("/save_message", {
+                        method: "post",
+                        body: formData
+                })
+            }
         </script>
 
     </body>
