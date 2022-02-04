@@ -17,7 +17,7 @@
 
 #define BACKLOG 20
 #define MAX_FDS 20
-#define BUF_SIZE 3000
+#define BUF_SIZE 4000
 
 void push_data(char *page, int conn_fd);
 void route_get(struct Request *request, int new_fd);

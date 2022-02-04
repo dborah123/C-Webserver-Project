@@ -19,13 +19,6 @@ async function getMessage() {
     `
 }
 
-function postMessage(form, formMessage) {
-    /**
-     * Posts message form data
-     */
-
-    
-}
 
 displayInfo = function() {
     /**
