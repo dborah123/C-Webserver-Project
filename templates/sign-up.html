@@ -45,7 +45,7 @@
         <form id="message-form">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="nameInput">Message</span>
-                <input type="text" class="form-control" aria-describedby="nameInput" name="name" maxlength="100">
+                <input type="text" id="message" class="form-control" aria-describedby="nameInput" name="name" maxlength="100">
             </div>
             <button id="submit" class="btn btn-outline-success">Submit</button>
         </form>
@@ -64,18 +64,20 @@
         <script type="text/javascript">
             console.log("hello world")
             window.onload = getMessage()
-            const messageForm = document.getElementById("messageForm")
+            const messageForm = document.getElementById("message-form")
 
             messageForm.addEventListener("submit", function (e) {
                 e.preventDefault()
 
                 const formData = new FormData(this)
 
+                const value = document.getElementById("message")
+
                 fetch("/save_message", {
                         method: "POST",
                         body: formData,
                 })
-            }
+            })
         </script>
 
     </body>

@@ -208,7 +208,6 @@ route_post(struct Request *request, int conn_fd) {
         push_data("templates/sign-up.html", conn_fd);
     } else if (strcmp(request->uri, "/save_message") == 0) {
         handle_json(request, conn_fd);
-        push_data("templates/sign-up.html", conn_fd);
     } else {
         push_data("404-not-found.html", conn_fd);
     }
