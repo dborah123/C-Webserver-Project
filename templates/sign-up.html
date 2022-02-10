@@ -42,7 +42,7 @@
 
         <h3>Write a message to the next visitor!</h3>
 
-        <form id="message-form">
+        <form id="message-form" method="POST">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="nameInput">Message</span>
                 <input type="text" id="message" class="form-control" aria-describedby="nameInput" name="name" maxlength="100">
@@ -65,7 +65,7 @@
             console.log("hello world")
             window.onload = getMessage()
             const messageForm = document.getElementById("message-form")
-
+/*
             messageForm.addEventListener("submit", function (e) {
                 e.preventDefault()
 
@@ -73,11 +73,12 @@
 
                 const value = document.getElementById("message")
 
+                console.log(formData)
                 fetch("/save_message", {
                         method: "POST",
-                        body: formData,
+                        body: value,
                 })
-            })
+            })*/
         </script>
 
     </body>
