@@ -192,6 +192,8 @@ route_get(struct Request *request, int conn_fd) {
         push_data("static/home.js", conn_fd);
     } else if (strncmp(uri, "/json", 5) == 0) {
         push_data("static/message.json", conn_fd);
+    } else if (strncmp(uri, "/info", 5) == 0) {
+        push_data("templates/sign-up.html", conn_fd);
     } else {
         push_data("templates/404-not-found.html", conn_fd);
     }
@@ -203,8 +205,7 @@ route_post(struct Request *request, int conn_fd) {
     /**
      * Routes POST requests to correct function
      */
-    if (strcmp(request->uri, "/sign-up") == 0) {
-        handle_json(request, conn_fd);
+    if (strcmp(request->uri, "/info") == 0) {
         push_data("templates/sign-up.html", conn_fd);
     } else if (strcmp(request->uri, "/save_message") == 0) {
         handle_json(request, conn_fd);

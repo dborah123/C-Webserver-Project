@@ -24,7 +24,7 @@
             Sign up here to see your information posted on this site
         </p>
         <h3 class="card">Information Form</h3>
-        <form action="" method="POST">
+        <form id="info-form" action="/info" method="POST">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="nameInput">Name</span>
                 <input type="text" class="form-control" id="name" aria-describedby="nameInput" name="name">
@@ -64,21 +64,13 @@
         <script type="text/javascript">
             console.log("hello world")
             window.onload = getMessage()
-            const messageForm = document.getElementById("message-form")
-/*
-            messageForm.addEventListener("submit", function (e) {
-                e.preventDefault()
 
-                const formData = new FormData(this)
+            const infoForm = document.getElementById("info-form")
 
-                const value = document.getElementById("message")
+            infoForm.addEventListener("submit", ()=> {
+                
+            })
 
-                console.log(formData)
-                fetch("/save_message", {
-                        method: "POST",
-                        body: value,
-                })
-            })*/
         </script>
 
     </body>
